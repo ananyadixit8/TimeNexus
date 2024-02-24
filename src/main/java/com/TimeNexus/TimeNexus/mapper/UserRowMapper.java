@@ -1,6 +1,6 @@
 package com.TimeNexus.TimeNexus.mapper;
 
-import com.TimeNexus.TimeNexus.dto.User;
+import com.TimeNexus.TimeNexus.model.User;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

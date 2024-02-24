@@ -1,4 +1,4 @@
-package com.TimeNexus.TimeNexus.dto;
+package com.TimeNexus.TimeNexus.model;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -11,9 +11,9 @@ import org.springframework.data.annotation.Id;
 public class User {
 
     @Id
-    private int user_id;
-    private String first_name;
-    private String last_name;
+    private int userId;
+    private String firstName;
+    private String lastName;
     private String email;
     private String password;
 

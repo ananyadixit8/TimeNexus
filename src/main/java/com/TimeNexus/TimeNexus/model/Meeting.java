@@ -1,4 +1,4 @@
-package com.TimeNexus.TimeNexus.dto;
+package com.TimeNexus.TimeNexus.model;
 
 import lombok.*;
 

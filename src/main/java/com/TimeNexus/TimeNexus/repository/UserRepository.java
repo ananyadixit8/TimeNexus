@@ -1,6 +1,6 @@
 package com.TimeNexus.TimeNexus.repository;
 
-import com.TimeNexus.TimeNexus.dto.User;
+import com.TimeNexus.TimeNexus.model.User;
 
 import java.util.List;
 
@@ -8,12 +8,12 @@ public interface UserRepository {
 
     List<User> findAll();
 
-    User findById(Long user_id);
+    User findById(int userId);
 
     User create(User user);
 
-    User update(User user);
+    void update(User user);
 
-    int deleteById(Long user_id);
+    int deleteById(int userId);
 
 }
