@@ -4,6 +4,9 @@ import lombok.*;
 
 import java.sql.Timestamp;
 
+/**
+ * Class for Meeting.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

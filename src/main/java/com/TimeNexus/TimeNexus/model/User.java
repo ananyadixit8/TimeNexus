@@ -3,6 +3,9 @@ package com.TimeNexus.TimeNexus.model;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 
+/**
+ * Class for User.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
