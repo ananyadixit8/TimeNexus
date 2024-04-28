@@ -65,7 +65,7 @@ public class UserService {
         try{
             return userRepository.findById(userId);
         } catch(EmptyResultDataAccessException e){
-            throw new UserNotFoundException("User with ID " + userId + "not found.");
+            throw new UserNotFoundException("User with ID " + userId + " not found.");
         }
 
     }
@@ -84,7 +84,7 @@ public class UserService {
         try{
             currentUser = userRepository.findById(userId);
         } catch(EmptyResultDataAccessException e){
-            throw new UserNotFoundException("User with ID " + userId + "not found.");
+            throw new UserNotFoundException("User with ID " + userId + " not found.");
         }
 
         // Create the updated user, according to request

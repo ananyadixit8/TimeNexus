@@ -1,6 +1,8 @@
 package com.TimeNexus.TimeNexus.builder;
 
+import com.TimeNexus.TimeNexus.model.MeetingParticipant;
 import com.TimeNexus.TimeNexus.model.User;
+import com.TimeNexus.TimeNexus.model.dto.MeetingParticipantDto;
 import com.TimeNexus.TimeNexus.model.dto.UserDto;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -27,6 +29,8 @@ public class UserBuilder {
     public User build(UserDto userDto){
         return modelMapper.map(userDto, User.class);
     }
+
+    public User build(MeetingParticipant meetingParticipant){ return modelMapper.map(meetingParticipant, User.class); }
 
     /**
      * Method to convert User object into a UserDto object.

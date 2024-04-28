@@ -3,21 +3,18 @@ package com.TimeNexus.TimeNexus.model;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 
-/**
- * Class for User.
- */
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-public class User {
+public class MeetingParticipant {
 
     @Id
     private Integer userId;
     private String firstName;
     private String lastName;
     private String email;
-    private String password;
+    private Boolean isHost = Boolean.FALSE;
 
 }

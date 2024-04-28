@@ -1,8 +1,10 @@
 package com.TimeNexus.TimeNexus.model;
 
 import lombok.*;
+import org.springframework.data.annotation.Id;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * Class for Meeting.
@@ -14,10 +16,20 @@ import java.sql.Timestamp;
 @Setter
 public class Meeting {
 
-    private int meeting_id;
-    private int duration;
+    @Id
+    private Integer meetingId;
+    private Integer duration;
     private String subject;
-    private Timestamp meeting_time;
-    private String extra_info;
+    private Timestamp meetingTime;
+    private String extraInfo;
+    private List<MeetingParticipant> participants;
+
+    public Meeting(int meetingId, int duration, String subject, Timestamp meetingTime, String extraInfo) {
+        this.meetingId = meetingId;
+        this.duration = duration;
+        this.subject = subject;
+        this.meetingTime = meetingTime;
+        this.extraInfo = extraInfo;
+    }
 
 }

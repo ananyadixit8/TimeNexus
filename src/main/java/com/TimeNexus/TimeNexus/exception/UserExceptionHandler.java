@@ -26,11 +26,14 @@ public class UserExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+
+        log.error("{}", ex);
+
         List<FieldError> errors = ex.getBindingResult().getFieldErrors();
         List<String> messages = new ArrayList<>();
         errors.forEach(fieldError -> {
-            log.error("Invalid {} value submitted for {}", fieldError.getRejectedValue(), fieldError.getField());
-            messages.add(fieldError.getField() + " cannot be null/empty.");
+            log.error("Invalid {} value submitted for {}, {}", fieldError.getRejectedValue(), fieldError.getField(), fieldError.toString());
+            messages.add(fieldError.getDefaultMessage());
         });
         ErrorResponse errorResponse = new ErrorResponse(messages);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
@@ -44,6 +47,9 @@ public class UserExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(UserNotFoundException.class)
     protected ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException ex){
+
+        log.error("User not found: ", ex);
+
         ErrorResponse errorResponse = new ErrorResponse(Collections.singletonList(ex.getMessage()));
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
@@ -55,7 +61,7 @@ public class UserExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<Object> handleGenericException(Exception ex){
-        log.error("Some error occurred: {}", ex.getMessage());
+        log.error("Some error occurred", ex);
         ErrorResponse errorResponse = new ErrorResponse(Collections.singletonList("Something Went wrong!"));
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
