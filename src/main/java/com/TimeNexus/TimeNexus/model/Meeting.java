@@ -18,18 +18,12 @@ public class Meeting {
 
     @Id
     private Integer meetingId;
-    private Integer duration;
-    private String subject;
-    private Timestamp meetingTime;
-    private String extraInfo;
+    private MeetingInfo meetingInfo;
     private List<MeetingParticipant> participants;
 
     public Meeting(int meetingId, int duration, String subject, Timestamp meetingTime, String extraInfo) {
         this.meetingId = meetingId;
-        this.duration = duration;
-        this.subject = subject;
-        this.meetingTime = meetingTime;
-        this.extraInfo = extraInfo;
+        this.meetingInfo = new MeetingInfo(duration, subject, meetingTime, extraInfo);
     }
 
 }

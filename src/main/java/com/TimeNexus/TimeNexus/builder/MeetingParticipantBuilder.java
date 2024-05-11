@@ -31,4 +31,8 @@ public class MeetingParticipantBuilder {
         return participant;
     }
 
+    public MeetingParticipant build(MeetingParticipantDto meetingParticipantDto){
+        return modelMapper.map(meetingParticipantDto, MeetingParticipant.class);
+    }
+
 }

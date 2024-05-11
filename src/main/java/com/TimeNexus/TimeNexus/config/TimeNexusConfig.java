@@ -1,13 +1,17 @@
 package com.TimeNexus.TimeNexus.config;
 
+import com.TimeNexus.TimeNexus.service.MeetingExpirationListener;
 import org.modelmapper.ModelMapper;
 import org.springframework.amqp.core.Queue;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.listener.PatternTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Configuration class for the application.
@@ -22,11 +26,6 @@ public class TimeNexusConfig {
     @Bean
     public ModelMapper modelMapper(){
         return new ModelMapper();
-    }
-
-    @Bean
-    public Queue myQueue() {
-        return new Queue("meetingsQueue");
     }
 
     @Bean

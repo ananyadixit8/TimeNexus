@@ -1,7 +1,9 @@
 package com.TimeNexus.TimeNexus.repository.Impl;
 
+import com.TimeNexus.TimeNexus.mapper.MeetingInfoRowMapper;
 import com.TimeNexus.TimeNexus.mapper.MeetingRowMapper;
 import com.TimeNexus.TimeNexus.model.Meeting;
+import com.TimeNexus.TimeNexus.model.MeetingInfo;
 import com.TimeNexus.TimeNexus.model.MeetingParticipant;
 import com.TimeNexus.TimeNexus.model.User;
 import com.TimeNexus.TimeNexus.repository.MeetingRepository;
@@ -48,10 +50,13 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     }
 
     @Override
-    public Meeting findById(int meetingId) {
+    public MeetingInfo findById(int meetingId) {
+
+        // TODO: Create two repos, one for meetingInfo one for meeting participants and one to combine them?
+
         return jdbcTemplate.queryForObject(
                 "SELECT * from meeting where meeting_id = ?",
-                new MeetingRowMapper(),
+                new MeetingInfoRowMapper(),
                 meetingId
         );
     }
@@ -64,10 +69,10 @@ public class MeetingRepositoryImpl implements MeetingRepository {
         jdbcTemplate.update( connection -> {
             PreparedStatement pst = connection.prepareStatement("INSERT INTO meeting (duration, subject, meeting_time, extra_info) VALUES (?,?,?,?)",
                     Statement.RETURN_GENERATED_KEYS);
-            pst.setInt(1, meeting.getDuration());
-            pst.setString(2, meeting.getSubject());
-            pst.setTimestamp(3, meeting.getMeetingTime());
-            pst.setString(4, meeting.getExtraInfo());
+            pst.setInt(1, meeting.getMeetingInfo().getDuration());
+            pst.setString(2, meeting.getMeetingInfo().getSubject());
+            pst.setTimestamp(3, meeting.getMeetingInfo().getMeetingTime());
+            pst.setString(4, meeting.getMeetingInfo().getExtraInfo());
             return pst;
         }, keyHolder);
         meeting.setMeetingId((Integer) Objects.requireNonNull(keyHolder.getKeys()).get("meeting_id"));

@@ -9,8 +9,7 @@ import lombok.*;
 @Setter
 public class ExecutionMessage {
 
-    // TODO: Might change to MeetingIfo later?
-    Meeting meeting;
+    MeetingInfo meetingInfo;
     Integer userId;
 
 }

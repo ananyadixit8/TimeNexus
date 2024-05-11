@@ -8,10 +8,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -21,58 +24,36 @@ public class RedisService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    @Autowired
-    private RabbitMQProducerService rabbitMQProducerService;
-
-    public void storeMeeting(Meeting meeting) {
-        // Generate a unique key for storing meeting information in Redis
-        String key = "meeting:" + meeting.getMeetingId();
-
-        // Iterate over participants and store userIds in Redis
-        List<MeetingParticipant> participants = meeting.getParticipants();
-        for (MeetingParticipant participant : participants) {
-            Integer userId = participant.getUserId();
-            // Store the userId in a Redis set under the generated key
-            redisTemplate.opsForSet().add(key, userId);
-        }
+    private void setExpirationTime(String key, Timestamp meetingTime) {
 
         // Calculate the expiration time based on the meetingTime
-        LocalDateTime meetingTime = meeting.getMeetingTime().toLocalDateTime();
-        Instant expirationInstant = meetingTime.atZone(ZoneId.systemDefault()).toInstant();
+        LocalDateTime localMeetingTime = meetingTime.toLocalDateTime();
+        Instant expirationInstant = localMeetingTime.atZone(ZoneId.systemDefault()).toInstant();
 
         // Set the expiration time for the key
         redisTemplate.expireAt(key, expirationInstant);
+
     }
 
+    public void storeMeeting(Meeting meeting) {
 
-    @Scheduled(fixedRate = 300000) // Run every 5 minutes (300,000 milliseconds)
-    public void checkAndProcessExpiringKeys() {
-        // Get all keys from Redis
-        Set<String> keys = redisTemplate.keys("meeting:*");
+        // Generate a unique key for storing meeting information in Redis
+        String key = "meetingId:" + meeting.getMeetingId();
 
-        Instant now = Instant.now();
-        Instant fiveMinutesLater = now.plus(Duration.ofMinutes(5));
+        redisTemplate.opsForValue().set(key, "");
 
-        // Iterate over keys and check if they are about to expire
-        for (String key : keys) {
-            Duration remainingTime = Duration.ofSeconds(redisTemplate.getExpire(key));
-            if (remainingTime != null && remainingTime.compareTo(Duration.ofMinutes(5)) <= 0) {
-                // Key is about to expire in 5 minutes or less
-                // Retrieve the values associated with the key
-                Set<Object> values = redisTemplate.opsForSet().members(key);
+        // Set the expiration time for the key
+        setExpirationTime(key, meeting.getMeetingInfo().getMeetingTime());
 
-                // Process the values as needed
-                for (Object value : values) {
-                    // Here, 'key' represents the meeting and 'value' represents the userId
-                    System.out.println("Key: " + key + ", Value: " + value);
-                    // Send the key-value pair to RabbitMQ queue
-                    rabbitMQProducerService.sendMessageToExecutionQueue("executionQueue", Integer.valueOf(key), (Integer) value);
-                }
-
-                // Delete the key from Redis
-                redisTemplate.delete(key);
-            }
+        // Create a Redis set with the format meeting:{meetingId} and store userIds
+        String setKey = "meetingIdToUserIds:" + meeting.getMeetingId();
+        List<MeetingParticipant> participants = meeting.getParticipants();
+        Set<Object> userIds = new HashSet<>();
+        for (MeetingParticipant participant : participants) {
+            userIds.add(participant.getUserId());
         }
+        redisTemplate.opsForSet().add(setKey, userIds);
+
     }
 
 }

@@ -7,13 +7,11 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class MeetingRowMapper implements RowMapper<Meeting> {
+public class MeetingInfoRowMapper  implements RowMapper<MeetingInfo> {
 
     @Override
-    public Meeting mapRow(ResultSet rs, int rowNum) throws SQLException {
-
-        return new Meeting(
-                rs.getInt("meeting_id"),
+    public MeetingInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
+        return new MeetingInfo(
                 rs.getInt("duration"),
                 rs.getString("subject"),
                 rs.getTimestamp("meeting_time"),

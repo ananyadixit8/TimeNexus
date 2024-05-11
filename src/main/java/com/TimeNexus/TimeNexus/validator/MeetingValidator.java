@@ -48,7 +48,7 @@ public class MeetingValidator {
         // Find host of meeting
         int hostId = userMeetingMapperRepository.getHost(meetingId);
         // if(userId != hostId){
-        // TO DO: throw correct exception
+        // TODO: throw correct exception
         // }
 
     }

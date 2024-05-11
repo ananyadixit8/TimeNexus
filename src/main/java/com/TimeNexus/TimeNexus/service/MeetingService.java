@@ -3,10 +3,7 @@ package com.TimeNexus.TimeNexus.service;
 import com.TimeNexus.TimeNexus.builder.MeetingBuilder;
 import com.TimeNexus.TimeNexus.builder.MeetingParticipantBuilder;
 import com.TimeNexus.TimeNexus.builder.MeetingResponseBuilder;
-import com.TimeNexus.TimeNexus.model.Meeting;
-import com.TimeNexus.TimeNexus.model.MeetingParticipant;
-import com.TimeNexus.TimeNexus.model.MeetingResponse;
-import com.TimeNexus.TimeNexus.model.User;
+import com.TimeNexus.TimeNexus.model.*;
 import com.TimeNexus.TimeNexus.model.dto.MeetingDto;
 import com.TimeNexus.TimeNexus.repository.MeetingRepository;
 import com.TimeNexus.TimeNexus.repository.UserMeetingMapperRepository;
@@ -51,16 +48,23 @@ public class MeetingService {
     }
 
     private MeetingParticipant buildMeetingHost(int userId){
-
         User hostUser = userService.getUserById(userId);
         MeetingParticipant host =  meetingParticipantBuilder.build(hostUser);
         host.setIsHost(true);
         return host;
     }
 
+    public MeetingInfo getMeetingInfoById(int meetingId){
+
+        return meetingRepository.findById(meetingId);
+
+    }
+
     public MeetingResponse createMeeting(int userId, MeetingDto meetingDto){
 
         Meeting meeting = meetingBuilder.build(meetingDto);
+
+        System.out.println("Meeting is " + meeting.toString());
 
         // Get the host of the meeting and add it to list of meeting participants
         meeting.getParticipants().add(buildMeetingHost(userId));
@@ -91,11 +95,12 @@ public class MeetingService {
         // Currently allowing only host to access complete meeting info
         // TO DO: Decide on behavior to get meeting a user is participant of
         meetingValidator.validateHost(userId, meetingId);
-        Meeting meeting = meetingRepository.findById(meetingId);
+
+        MeetingInfo meetingInfo = meetingRepository.findById(meetingId);
 
         List<MeetingParticipant> participants = userMeetingMapperRepository.getParticipants(meetingId);
 
-        meeting.setParticipants(participants);
+        Meeting meeting = new Meeting(meetingId, meetingInfo, participants);
 
         return meetingResponseBuilder.build(meeting);
 
