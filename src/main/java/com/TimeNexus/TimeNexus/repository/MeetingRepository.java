@@ -1,15 +1,16 @@
 package com.TimeNexus.TimeNexus.repository;
 
 import com.TimeNexus.TimeNexus.model.Meeting;
-import com.TimeNexus.TimeNexus.model.MeetingInfo;
 
 import java.util.List;
 
 public interface MeetingRepository {
 
-    List<Meeting> findAll(int userId);
+    List<Meeting> findAllMeetingsForUser(int userId);
 
-    MeetingInfo findById(int meetingId);
+    List<Meeting> findAllMeetings();
+
+    Meeting findById(int meetingId);
 
     Meeting create(Meeting meeting);
 

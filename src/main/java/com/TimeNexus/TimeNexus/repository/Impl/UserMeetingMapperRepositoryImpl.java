@@ -94,6 +94,15 @@ public class UserMeetingMapperRepositoryImpl implements UserMeetingMapperReposit
     }
 
     @Override
+    public List<Integer> getMeetingIdsForUser(int userId) {
+        return jdbcTemplate.queryForList(
+                "SELECT meeting_id FROM user_meeting WHERE user_id = ?",
+                Integer.class,
+                userId
+        );
+    }
+
+    @Override
     public Boolean isParticipant(int userId, int meetingId) {
 
         String sql = "SELECT COUNT(*) FROM user_meeting WHERE user_id = ? AND meeting_id = ?";

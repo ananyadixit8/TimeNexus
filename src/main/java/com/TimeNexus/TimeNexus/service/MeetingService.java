@@ -11,7 +11,11 @@ import com.TimeNexus.TimeNexus.validator.MeetingValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,7 +27,6 @@ public class MeetingService {
     private final UserService userService;
     private final MeetingBuilder meetingBuilder;
     private final MeetingValidator meetingValidator;
-    private final UserMeetingMapperRepository userMeetingMapperRepository;
     private final MeetingResponseBuilder meetingResponseBuilder;
     private final MeetingParticipantBuilder meetingParticipantBuilder;
     private final RabbitMQProducerService rabbitMQProducerService;
@@ -33,7 +36,6 @@ public class MeetingService {
                           UserService userService,
                           MeetingBuilder meetingBuilder,
                           MeetingValidator meetingValidator,
-                          UserMeetingMapperRepository userMeetingMapperRepository,
                           MeetingResponseBuilder meetingResponseBuilder,
                           MeetingParticipantBuilder meetingParticipantBuilder,
                           RabbitMQProducerService rabbitMQProducerService){
@@ -41,7 +43,6 @@ public class MeetingService {
         this.userService = userService;
         this.meetingBuilder = meetingBuilder;
         this.meetingValidator = meetingValidator;
-        this.userMeetingMapperRepository = userMeetingMapperRepository;
         this.meetingResponseBuilder = meetingResponseBuilder;
         this.meetingParticipantBuilder = meetingParticipantBuilder;
         this.rabbitMQProducerService = rabbitMQProducerService;
@@ -54,12 +55,24 @@ public class MeetingService {
         return host;
     }
 
-    public MeetingInfo getMeetingInfoById(int meetingId){
+    private static boolean isMeetingScheduledForToday(Meeting meeting) {
 
-        return meetingRepository.findById(meetingId);
+        // Get the current date
+        LocalDate today = LocalDate.now();
+
+        // Convert the meeting time to LocalDateTime
+        Timestamp meetingTime = meeting.getMeetingInfo().getMeetingTime();
+        LocalDateTime meetingDateTime = meetingTime.toLocalDateTime();
+
+        // Extract the date part from the meeting date time
+        LocalDate meetingDate = meetingDateTime.toLocalDate();
+
+        // Compare the meeting date with today's date
+        return meetingDate.equals(today);
 
     }
 
+    @Transactional
     public MeetingResponse createMeeting(int userId, MeetingDto meetingDto){
 
         Meeting meeting = meetingBuilder.build(meetingDto);
@@ -73,36 +86,47 @@ public class MeetingService {
 
         meeting = meetingRepository.create(meeting);
 
-        userMeetingMapperRepository.saveParticipants(meeting);
 
-        // Send meeting to rabbitMQ queue
-        rabbitMQProducerService.sendMessageToMeetingQueue("meetingsQueue", meeting);
+        if(isMeetingScheduledForToday(meeting)){
+            // Send meeting to rabbitMQ queue
+            rabbitMQProducerService.sendMessageToMeetingQueue("meetingsQueue", meeting);
+        }
 
         return meetingResponseBuilder.build(meeting);
     }
 
-    public List<MeetingResponse> getAllMeetings(int userId){
+    public List<MeetingResponse> getAllMeetingsForUser(int userId){
 
         // Returning all the meetings for this user
-        return meetingRepository.findAll(userId).stream()
+        return meetingRepository.findAllMeetingsForUser(userId).stream()
                 .map(meetingResponseBuilder::build)
                 .collect(Collectors.toList());
 
     }
 
-    public MeetingResponse getMeetingById(int userId, int meetingId) {
+    public Meeting getMeetingById(int meetingId){
+
+        return meetingRepository.findById(meetingId);
+
+    }
+
+    public MeetingResponse getMeetingByIdForUser(int userId, int meetingId) {
 
         // Currently allowing only host to access complete meeting info
         // TO DO: Decide on behavior to get meeting a user is participant of
         meetingValidator.validateHost(userId, meetingId);
 
-        MeetingInfo meetingInfo = meetingRepository.findById(meetingId);
-
-        List<MeetingParticipant> participants = userMeetingMapperRepository.getParticipants(meetingId);
-
-        Meeting meeting = new Meeting(meetingId, meetingInfo, participants);
+       Meeting meeting = meetingRepository.findById(meetingId);
 
         return meetingResponseBuilder.build(meeting);
 
+    }
+
+    public List<MeetingResponse> getAllMeetings(){
+
+        // Returning all the meetings for this user
+        return meetingRepository.findAllMeetings().stream()
+                .map(meetingResponseBuilder::build)
+                .collect(Collectors.toList());
     }
 }

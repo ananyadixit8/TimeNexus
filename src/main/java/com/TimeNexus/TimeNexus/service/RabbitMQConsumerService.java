@@ -36,11 +36,9 @@ public class RabbitMQConsumerService {
             // Process the Meeting object as needed
             System.out.println("Received Meeting from queue: " + meeting);
 
-            // TODO: Add processing for message
             redisProducerService.storeMeeting(meeting);
 
             // Acknowledge the message
-            // TODO: Uncomment after implementing processing logic
              channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
              System.out.println("Message acknowledged");
 
@@ -62,12 +60,10 @@ public class RabbitMQConsumerService {
             // Process the Meeting object as needed
             System.out.println("Received execution message from queue: " + executionMessage);
 
-            // TODO: Add processing for message
-            emailService.sendSimpleEmail(participant.getEmail(), "[TimeNexus Meetings] [Reminder] Your meeting " + executionMessage.getMeetingInfo().getSubject() + " starts soon" , executionMessage.getMeetingInfo().toString());
+            emailService.sendSimpleEmail(participant.getEmail(), executionMessage.getMeetingInfo());
             System.out.println("Email sent");
 
             // Acknowledge the message
-            // TODO: Uncomment after implementing processing logic
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
             System.out.println("Message acknowledged");
 

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Meeting Reminder</title>
+</head>
+<body>
+<div>
+    <h2>Meeting Reminder</h2>
+    <p>Hello,</p>
+    <p>This is a reminder for your upcoming meeting:</p>
+    <p><strong>Meeting Subject:</strong> <span th:text="${meetingInfo.subject}"></span></p>
+    <p><strong>Meeting Time:</strong> <span th:text="${meetingInfo.meetingTime}"></span></p>
+    <p><strong>Meeting Duration:</strong> <span th:text="${meetingInfo.duration}"></span></p>
+    <p><span th:text="${meetingInfo.extraInfo}"></span></p>
+    <p>For any questions or concerns, feel free to contact us.</p>
+</div>
+</body>
+</html>

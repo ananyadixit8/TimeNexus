@@ -2,6 +2,7 @@ package com.TimeNexus.TimeNexus.service;
 
 import com.TimeNexus.TimeNexus.model.ExecutionMessage;
 import com.TimeNexus.TimeNexus.model.MeetingInfo;
+import com.TimeNexus.TimeNexus.repository.MeetingInfoRepository;
 import com.TimeNexus.TimeNexus.repository.MeetingRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.TimeNexus.TimeNexus.model.Meeting;
@@ -20,7 +21,7 @@ public class RabbitMQProducerService {
     private ObjectMapper objectMapper; // Jackson ObjectMapper for JSON serialization
 
     @Autowired
-    private MeetingRepository meetingRepository;
+    private MeetingInfoRepository meetingInfoRepository;
 
     public void sendMessageToMeetingQueue(String queueName, Meeting meeting) {
         try {
@@ -34,8 +35,7 @@ public class RabbitMQProducerService {
 
     public void sendMessageToExecutionQueue(String queueName, Integer meetingId, Integer userId) {
         try {
-
-            MeetingInfo meetingInfo = meetingRepository.findById(meetingId);
+            MeetingInfo meetingInfo = meetingInfoRepository.findById(meetingId);
             ExecutionMessage executionMessage = new ExecutionMessage(meetingInfo, userId);
             String jsonMeeting = objectMapper.writeValueAsString(executionMessage);
             rabbitTemplate.convertAndSend(queueName, jsonMeeting);

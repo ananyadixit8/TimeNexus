@@ -4,16 +4,13 @@ package com.TimeNexus.TimeNexus.service;
 import com.TimeNexus.TimeNexus.model.Meeting;
 import com.TimeNexus.TimeNexus.model.MeetingParticipant;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.sql.Timestamp;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +21,9 @@ public class RedisService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
+    @Autowired
+    private MeetingService meetingService;
+
     private void setExpirationTime(String key, Timestamp meetingTime) {
 
         // Calculate the expiration time based on the meetingTime
@@ -33,6 +33,12 @@ public class RedisService {
         // Set the expiration time for the key
         redisTemplate.expireAt(key, expirationInstant);
 
+    }
+
+    public Boolean storeMeetingInRedis(Integer meetingId){
+        Meeting meeting = meetingService.getMeetingById(meetingId);
+        storeMeeting(meeting);
+        return true;
     }
 
     public void storeMeeting(Meeting meeting) {

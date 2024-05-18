@@ -19,8 +19,8 @@ public class MeetingController {
     MeetingService meetingService;
 
     @GetMapping("/meetings")
-    public ResponseEntity<List<MeetingResponse>> getAllMeetings(@RequestHeader("userId") int userId){
-        List<MeetingResponse> meetings = meetingService.getAllMeetings(userId);
+    public ResponseEntity<List<MeetingResponse>> getAllMeetingsForUser(@RequestHeader("userId") int userId){
+        List<MeetingResponse> meetings = meetingService.getAllMeetingsForUser(userId);
         return new ResponseEntity<>(meetings, HttpStatus.OK);
     }
 
@@ -32,8 +32,14 @@ public class MeetingController {
 
     @GetMapping("/meetings/{meetingId}")
     public ResponseEntity<MeetingResponse> getMeetingById(@RequestHeader("userId") int userId, @PathVariable int meetingId){
-        MeetingResponse meeting = meetingService.getMeetingById(userId, meetingId);
+        MeetingResponse meeting = meetingService.getMeetingByIdForUser(userId, meetingId);
         return new ResponseEntity<>(meeting, HttpStatus.OK);
+    }
+
+    @GetMapping("/allMeetings")
+    public ResponseEntity<List<MeetingResponse>> getAllMeetings(){
+        List<MeetingResponse> meetings = meetingService.getAllMeetings();
+        return new ResponseEntity<>(meetings, HttpStatus.OK);
     }
 
 }

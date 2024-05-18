@@ -1,25 +1,21 @@
 package com.TimeNexus.TimeNexus.repository.Impl;
 
-import com.TimeNexus.TimeNexus.mapper.MeetingInfoRowMapper;
 import com.TimeNexus.TimeNexus.mapper.MeetingRowMapper;
 import com.TimeNexus.TimeNexus.model.Meeting;
 import com.TimeNexus.TimeNexus.model.MeetingInfo;
 import com.TimeNexus.TimeNexus.model.MeetingParticipant;
-import com.TimeNexus.TimeNexus.model.User;
+import com.TimeNexus.TimeNexus.repository.MeetingInfoRepository;
 import com.TimeNexus.TimeNexus.repository.MeetingRepository;
 import com.TimeNexus.TimeNexus.repository.UserMeetingMapperRepository;
-import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,16 +28,41 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     @Autowired
     UserMeetingMapperRepository userMeetingMapperRepository;
 
+    @Autowired
+    MeetingInfoRepository meetingInfoRepository;
+
     @Override
-    public List<Meeting> findAll(int userId) {
+    public List<Meeting> findAllMeetingsForUser(int userId) {
+
+        // Fetch meeting IDs associated with the user
+        List<Integer> meetingIds = userMeetingMapperRepository.getMeetingIdsForUser(userId);
+
+        List<Meeting> meetings = new ArrayList<>();
+
+        // Fetch MeetingInfo and MeetingParticipants for each meeting ID
+        for (Integer meetingId : meetingIds) {
+
+            MeetingInfo meetingInfo = meetingInfoRepository.findById(meetingId);
+            List<MeetingParticipant> participants = userMeetingMapperRepository.getParticipants(meetingId);
+
+            // Create Meeting object and add to the list
+            Meeting meeting = new Meeting(meetingId, meetingInfo, participants);
+            meetings.add(meeting);
+        }
+
+        return meetings;
+    }
+
+    @Override
+    public List<Meeting> findAllMeetings(){
+
         List<Meeting> meetings =  jdbcTemplate.query(
-                "SELECT * from meeting where meeting_id in (select meeting_id from user_meeting where user_id = ?)",
-                new MeetingRowMapper(),
-                userId
+                "SELECT * from meeting",
+                new MeetingRowMapper()
         );
 
         for (Meeting meeting : meetings
-             ) {
+        ) {
             List<MeetingParticipant> participants = userMeetingMapperRepository.getParticipants(meeting.getMeetingId());
             meeting.setParticipants(participants);
         }
@@ -50,34 +71,27 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     }
 
     @Override
-    public MeetingInfo findById(int meetingId) {
+    public Meeting findById(int meetingId) {
 
-        // TODO: Create two repos, one for meetingInfo one for meeting participants and one to combine them?
+        MeetingInfo meetingInfo = meetingInfoRepository.findById(meetingId);
+        List<MeetingParticipant> participants = userMeetingMapperRepository.getParticipants(meetingId);
+        return new Meeting(meetingId, meetingInfo, participants);
 
-        return jdbcTemplate.queryForObject(
-                "SELECT * from meeting where meeting_id = ?",
-                new MeetingInfoRowMapper(),
-                meetingId
-        );
     }
 
     @Override
     public Meeting create(Meeting meeting) {
 
         // Save meeting details in database
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update( connection -> {
-            PreparedStatement pst = connection.prepareStatement("INSERT INTO meeting (duration, subject, meeting_time, extra_info) VALUES (?,?,?,?)",
-                    Statement.RETURN_GENERATED_KEYS);
-            pst.setInt(1, meeting.getMeetingInfo().getDuration());
-            pst.setString(2, meeting.getMeetingInfo().getSubject());
-            pst.setTimestamp(3, meeting.getMeetingInfo().getMeetingTime());
-            pst.setString(4, meeting.getMeetingInfo().getExtraInfo());
-            return pst;
-        }, keyHolder);
-        meeting.setMeetingId((Integer) Objects.requireNonNull(keyHolder.getKeys()).get("meeting_id"));
+        Integer meetingId = meetingInfoRepository.create(meeting.getMeetingInfo());
+
+        meeting.setMeetingId(meetingId);
+
+        // Save participants in the database
+        userMeetingMapperRepository.saveParticipants(meeting);
 
         return meeting;
+
     }
 
     @Override
